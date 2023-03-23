@@ -1,0 +1,8 @@
+﻿{
+	"profiles": {
+		"rpcCompanion": {
+			"commandName": "Executable",
+			"executablePath": "..\\osu!StreamCompanion.exe"
+		}
+	}
+}
