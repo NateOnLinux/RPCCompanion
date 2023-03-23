@@ -19,8 +19,8 @@
  
  Please submit bugs and feature requests [here](https://github.com/NateOnLinux/rpcCompanion/issues).
  
- #Linux Support:
+ ### Linux Support:
  Currently Linux and MacOS are not supported (StreamCompanion does not support Linux/MacOS). A lot of the code in this project is linux-friendly, so I plan to make a CLI app with similar functionality in the future.
  
- #License:
+ ### License:
  This software is licensed under MIT. You can find the full text of the license 
