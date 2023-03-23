@@ -95,11 +95,11 @@ namespace RPCCompanion
         {
             if (tknName is null)
             {
-                return "0";
+                return "no token provided";
             }
             else if(Tokens.AllTokens[tknName].Value is null)
             {
-                return "0";
+                return "no token data found";
             }
             else
             {
