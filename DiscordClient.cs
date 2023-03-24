@@ -39,9 +39,6 @@ namespace RPCCompanion
             {
                 RPCCompanion.Logger.Log(ex, StreamCompanionTypes.Enums.LogLevel.Error);
             }
-
-                // ** I don't know why I even had this line. Delete later if nothing breaks**
-            // Initialized = disClient.IsInitialized;
         }
     }
 }

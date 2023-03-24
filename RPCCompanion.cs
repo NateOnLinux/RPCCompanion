@@ -6,14 +6,12 @@ using StreamCompanionTypes.Interfaces.Sources;
 using StreamCompanionTypes.DataTypes;
 using DiscordRPC;
 
-//This plugin makes heavy use of discord-rpc-csharp by Lachee: https://github.com/Lachee/discord-rpc-csharp
-
 namespace RPCCompanion
 {
     public class RPCCompanion : IPlugin, ITokensSource, IMapDataConsumer, ISettingsSource
     {
         public string Description => "Provides detailed Rich Presence for osu! (Game invites not supported)";
-        public string Name => "RPCCompanion v230323.00";
+        public string Name => "RPCCompanion v230324.01";
         public string Author => "NateOnLinux";
         public string Url => "https://github.com/NateOnLinux/rpcCompanion";
         public string SettingGroup => "Discord Rich Presence";
@@ -147,7 +145,7 @@ namespace RPCCompanion
             string? state;
             string largeImageKey = "osupng";
             string largeImageText;
-            string smallImageKey = "stopwatch";
+            string smallImageKey;
             string smallImageText;
             string rpcProfileLink = Tkn("rpcProfileLink");
             string dl = Tkn("dl");
@@ -182,6 +180,26 @@ namespace RPCCompanion
                 "Editing" => mBpm + " BPM",
                 _ => (Math.Round(Convert.ToDouble(ppIfMapEndsNow)))+ "pp"
             };
+            try
+            {
+                if (Tkn("rawStatus") != "NotRunning" || Tkn("rawStatus") is not null)
+                    smallImageKey = status switch
+                    {
+                        "Listening" => "idle",
+                        _ => smallImageKey = gameMode.ToLower()
+                    };
+                else
+                {
+                    smallImageText = "Not running";
+                    smallImageKey = "idle";
+                }
+            }
+            catch (KeyNotFoundException e)
+            {
+                smallImageKey = "osupng";
+                Logger.Log(e, LogLevel.Trace);
+            }
+
             DiscordRPC.Button myProfile = new DiscordRPC.Button() { Label = "My Profile", Url = rpcProfileLink };
             DiscordRPC.Button dlButton = new DiscordRPC.Button() { Label = "Map Link", Url = dl };
 
