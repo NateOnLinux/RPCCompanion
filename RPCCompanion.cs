@@ -83,26 +83,23 @@ namespace RPCCompanion
         {
             while (discordClient.Initialized)
             {
-                discordClient.Update(PresenceBuilder(_settings.Get<bool>(_rpcConfig.Detailed), Tkn("status")));
+                discordClient.Update(PresenceBuilder(_settings.Get<bool>(_rpcConfig.Detailed), TokenParser("status")));
                 Thread.Sleep(1000); //This can be any number
             }
             return Task.CompletedTask;
         }
         
-        private protected string Tkn(string tknName)
+        private protected string TokenParser(string tknName)
         {
-            if (tknName is null)
+            if (Tokens.AllTokens.TryGetValue(tknName, out var token))
             {
-                return "no token provided";
-            }
-            else if(Tokens.AllTokens[tknName].Value is null)
-            {
-                return "no token data found";
+                if (token.Value is not null)
+                    return token.Value.ToString();
+                else
+                    return "No token data found";
             }
             else
-            {
-                return Tokens.AllTokens[tknName].Value.ToString()!;
-            }
+                return "Invalid token name";
         }
         public struct StateType
         {
@@ -124,31 +121,29 @@ namespace RPCCompanion
         /// <returns></returns>
         private protected RichPresence PresenceBuilder(bool detailed, string status)
         {
-            int? circles = int.Parse(Tkn("circles"));
-            int? sliders = int.Parse(Tkn("sliders"));
-            int? spinners = int.Parse(Tkn("spinners"));
-            string acc = Tkn("acc") + "%";
-            string c100 = Tkn("c100");
-            string c50 = Tkn("c50");
-            string miss = Tkn("miss");
-            string currentMaxCombo = Tkn("currentMaxCombo") + "x";
-            string mBpm = Tkn("mBpm");
-            string mods = Tkn("mods").Replace("None", "NoMod");
-            string diff = Tkn("mapDiff");
-            string mapArtistTitle = Tkn("mapArtistTitle");
-            string username = Tkn("username");
-            string gameMode = Tkn("gameMode");
-            string ppIfMapEndsNow = Tkn("ppIfMapEndsNow");
-            string osu_mSSPP = Tkn("osu_mSSPP");
-            string mania_m1_000_000PP = Tkn("mania_m1_000_000PP");
+            int? circles = int.Parse(TokenParser("circles"));
+            int? sliders = int.Parse(TokenParser("sliders"));
+            int? spinners = int.Parse(TokenParser("spinners"));
+            string acc = TokenParser("acc") + "%";
+            string c100 = TokenParser("c100");
+            string c50 = TokenParser("c50");
+            string miss = TokenParser("miss");
+            string currentMaxCombo = TokenParser("currentMaxCombo") + "x";
+            string mBpm = TokenParser("mBpm");
+            string mods = TokenParser("mods").Replace("None", "NoMod");
+            string diff = TokenParser("mapDiff");
+            string mapArtistTitle = TokenParser("mapArtistTitle");
+            string username = TokenParser("username");
+            string gameMode = TokenParser("gameMode");
+            string ppIfMapEndsNow = TokenParser("ppIfMapEndsNow");
             string? details;
             string? state;
             string largeImageKey = "osupng";
             string largeImageText;
             string smallImageKey;
             string smallImageText;
-            string rpcProfileLink = Tkn("rpcProfileLink");
-            string dl = Tkn("dl");
+            string rpcProfileLink = TokenParser("rpcProfileLink");
+            string dl = TokenParser("dl");
             StateType State = new StateType(detailed, status);
             details = status switch //Details - same for Detailed and Minimal
             {
@@ -159,8 +154,8 @@ namespace RPCCompanion
             };
             state = State switch // Struct allows changes based on combined detail and status (This will be relevant in future)
             {
-                { Detailed: true, Status: "Listening" } => RawStatusMapping(rawStatusMapping, Tkn("rawStatus")),
-                { Detailed: false, Status: "Listening" } => RawStatusMapping(rawStatusMapping, Tkn("rawStatus")),
+                { Detailed: true, Status: "Listening" } => RawStatusMapping(rawStatusMapping, TokenParser("rawStatus")),
+                { Detailed: false, Status: "Listening" } => RawStatusMapping(rawStatusMapping, TokenParser("rawStatus")),
                 { Detailed: true, Status: "Editing" } => $"Objects: {circles + sliders + spinners}",
                 { Detailed: false, Status: "Editing" } => $"Objects: {circles + sliders + spinners}",
                 { Detailed: true, Status: "Watching" } => $"{mapArtistTitle} {diff}", // Map info moved to State while spectating
@@ -180,26 +175,17 @@ namespace RPCCompanion
                 "Editing" => mBpm + " BPM",
                 _ => (Math.Round(Convert.ToDouble(ppIfMapEndsNow)))+ "pp"
             };
-            try
-            {
-                if (Tkn("rawStatus") != "NotRunning" || Tkn("rawStatus") is not null)
-                    smallImageKey = status switch
-                    {
-                        "Listening" => "idle",
-                        _ => smallImageKey = gameMode.ToLower()
-                    };
-                else
+            if (TokenParser("rawStatus") != "NotRunning" || TokenParser("rawStatus") is not null)
+                smallImageKey = status switch
                 {
-                    smallImageText = "Not running";
-                    smallImageKey = "idle";
-                }
-            }
-            catch (KeyNotFoundException e)
+                    "Listening" => "idle",
+                    _ => gameMode.ToLower()
+                };
+            else
             {
-                smallImageKey = "osupng";
-                Logger.Log(e, LogLevel.Trace);
+                smallImageText = "Not running";
+                smallImageKey = "idle";
             }
-
             DiscordRPC.Button myProfile = new DiscordRPC.Button() { Label = "My Profile", Url = rpcProfileLink };
             DiscordRPC.Button dlButton = new DiscordRPC.Button() { Label = "Map Link", Url = dl };
 
