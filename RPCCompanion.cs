@@ -11,7 +11,7 @@ namespace RPCCompanion
     public class RPCCompanion : IPlugin, ITokensSource, IMapDataConsumer, ISettingsSource
     {
         public string Description => "Provides detailed Rich Presence for osu! (Game invites not supported)";
-        public string Name => "RPCCompanion v230324.20";
+        public string Name => "RPCCompanion v0.2.1";
         public string Author => "NateOnLinux";
         public string Url => "https://github.com/NateOnLinux/rpcCompanion";
         public string SettingGroup => "Discord Rich Presence";
