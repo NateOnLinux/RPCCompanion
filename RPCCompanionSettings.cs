@@ -1,9 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using StreamCompanionTypes.Interfaces.Services;
 using StreamCompanionTypes.DataTypes;
-using System.Text.RegularExpressions;
-using StreamCompanionTypes.Enums;
-using static System.Net.WebRequestMethods;
 
 namespace RPCCompanion
 {
@@ -19,8 +17,9 @@ namespace RPCCompanion
             checkBox_EnableRPC.Checked = _settings.Get<bool>(_RPCConfig.enableRPC);
             radioButton_Detailed.Checked = _settings.Get<bool>(_RPCConfig.Detailed);
             radioButton_Minimal.Checked = !radioButton_Detailed.Checked;
-            profileLinkTb.Text = _settings.Get<string>(_RPCConfig.ProfileLink);
-            //profileLinkTb.Text = _settings.Get<object>(_RPCConfig.ProfileLink).ToString() is not null ? _settings.Get<object>(_RPCConfig.ProfileLink).ToString() : "https://osu.ppy.sh/users/";
+            radioButton_Akatsuki.Checked = (_settings.Get<string>(_RPCConfig.Server) == "Akatsuki");
+            radioButton_Ripple.Checked = (_settings.Get<string>(_RPCConfig.Server) == "Ripple");
+            radioButton_Bancho.Checked = (_settings.Get<string>(_RPCConfig.Server) == "Bancho");
             if (int.Parse(Tokens.AllTokens["osuIsRunning"].Value.ToString()!) == 0) { label_NotRunningWarn.Visible = true; }
             init = false;
         }
@@ -30,28 +29,39 @@ namespace RPCCompanion
             if (init) return;
             _settings.Add(_RPCConfig.enableRPC.Name, checkBox_EnableRPC.Checked);
         }
-        
+
         private void radioButton_Detailed_CheckedChanged(object sender, EventArgs e) //read radiobutton state (default "Detailed"). This is not scalable but it works
         {
             if (init) return;
             _settings.Add(_RPCConfig.Detailed.Name, radioButton_Detailed.Checked);
         }
 
-        private void profileLinkTb_TextChanged(object sender, EventArgs e)
+        private void radioButtons_Server_CheckChanged(object sender, EventArgs e)
         {
-            CheckURL(@"^(((http|https)://)((old|osu).ppy.sh/users/)(\d+))$", profileLinkTb);
+            var server = (RadioButton)sender;
+            switch (server.Tag)
+            {
+                case ("Akatsuki"):
+                    _settings.Add(_RPCConfig.Server.Name, "Akatsuki");
+                    break;
+                case ("Ripple"):
+                    _settings.Add(_RPCConfig.Server.Name, "Ripple");
+                    break;
+                case ("Bancho"):
+                default:
+                    _settings.Add(_RPCConfig.Server.Name, "Bancho");
+                    break;
+            }
         }
 
-        private void CheckURL(string check, TextBox tb)
+        private void versionLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Regex regex = new Regex(check);
-            if (regex.IsMatch(tb.Text))
-            {
-                tb.ForeColor = Color.Green;
-                _settings.Add(_RPCConfig.ProfileLink.Name, tb.Text);
-            }
-            else
-                tb.ForeColor = Color.Red;
+            Process.Start("https://github.com/NateOnLinux/RPCCompanion/releases/tag/Latest");
+        }
+
+        private void bugLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("https://github.com/NateOnLinux/RPCCompanion/issues");
         }
     }
 
@@ -59,6 +69,7 @@ namespace RPCCompanion
     {
         public readonly ConfigEntry enableRPC = new ConfigEntry("Enable RPC", false);
         public readonly ConfigEntry Detailed = new ConfigEntry("Detailed", true);
+        public readonly ConfigEntry Server = new ConfigEntry("Server", "Bancho");
         public readonly ConfigEntry ProfileLink = new ConfigEntry("Profile Link", "https://osu.ppy.sh/");
     }
 }

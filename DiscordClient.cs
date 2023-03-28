@@ -17,7 +17,7 @@ namespace RPCCompanion
             }
             catch (Exception ex)
             {
-                if(discordClient.IsInitialized) // Still trying to figure out what causes this state (RPC client is running, but Initialized = false). Happened a few times, this is just a bandaid
+                if (discordClient.IsInitialized) // Still trying to figure out what causes this state (RPC client is running, but Initialized = false). Happened a few times, this is just a bandaid
                 {
                     RPCCompanion.Logger.Log("The client is already initialized. Error:" + ex, StreamCompanionTypes.Enums.LogLevel.Trace);
                     Initialized = true;

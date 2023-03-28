@@ -11,7 +11,7 @@ namespace RPCCompanion
     public class RPCCompanion : IPlugin, ITokensSource, IMapDataConsumer, ISettingsSource
     {
         public string Description => "Provides detailed Rich Presence for osu! (Game invites not supported)";
-        public string Name => "RPCCompanion v0.2.1";
+        public string Name => "RPCCompanion v0.3.0";
         public string Author => "NateOnLinux";
         public string Url => "https://github.com/NateOnLinux/rpcCompanion";
         public string SettingGroup => "Discord Rich Presence";
@@ -47,7 +47,7 @@ namespace RPCCompanion
             tokenSetter("rpcPluginEnabled", _settings.Get<bool>(_rpcConfig.enableRPC), TokenType.Normal, null, "default value", OsuStatus.All);
             tokenSetter("rpcClientInitialized", discordClient.Initialized, TokenType.Normal, null, "default value", OsuStatus.All);
             tokenSetter("rpcDetailedMode", _settings.Get<bool>(_rpcConfig.Detailed), TokenType.Normal, null, "default value", OsuStatus.All);
-            tokenSetter("rpcProfileLink", _settings.Get<string>(_rpcConfig.ProfileLink), TokenType.Normal, null, "default value", OsuStatus.All);
+            tokenSetter("server", _settings.Get<string>(_rpcConfig.Server), TokenType.Normal, null, "default value", OsuStatus.All);
             return Task.CompletedTask;
         }
 
@@ -58,7 +58,7 @@ namespace RPCCompanion
 
         public object GetUiSettings()
         {
-            if(_rpcCompanionSettings == null || _rpcCompanionSettings.IsDisposed)
+            if (_rpcCompanionSettings == null || _rpcCompanionSettings.IsDisposed)
                 _rpcCompanionSettings = new RPCCompanionSettings(_settings);
             return _rpcCompanionSettings;
         }
@@ -88,7 +88,7 @@ namespace RPCCompanion
             }
             return Task.CompletedTask;
         }
-        
+
         private protected string TokenParser(string tknName)
         {
             if (Tokens.AllTokens.TryGetValue(tknName, out var token))
@@ -108,7 +108,7 @@ namespace RPCCompanion
             public bool Detailed { get; }
             public string Status { get; }
         }
-        public string RawStatusMapping(IDictionary<string, string> mapping, string rawStatus) 
+        public string RawStatusMapping(IDictionary<string, string> mapping, string rawStatus)
         {
             return mapping[rawStatus];
         }
@@ -121,6 +121,8 @@ namespace RPCCompanion
         /// <returns></returns>
         private protected RichPresence PresenceBuilder(bool detailed, string status)
         {
+            string banchoUsername = TokenParser("banchoUsername");
+            string banchoId = TokenParser("banchoId");
             int? circles = int.Parse(TokenParser("circles"));
             int? sliders = int.Parse(TokenParser("sliders"));
             int? spinners = int.Parse(TokenParser("spinners"));
@@ -136,33 +138,44 @@ namespace RPCCompanion
             string username = TokenParser("username");
             string gameMode = TokenParser("gameMode");
             string ppIfMapEndsNow = TokenParser("ppIfMapEndsNow");
+            string server = TokenParser("server");
             string? details;
             string? state;
             string largeImageKey = "osupng";
             string largeImageText;
             string smallImageKey;
             string smallImageText;
-            string rpcProfileLink = TokenParser("rpcProfileLink");
+            string rpcProfileLink;
             string dl = TokenParser("dl");
             StateType State = new StateType(detailed, status);
             details = status switch //Details - same for Detailed and Minimal
             {
                 "Listening" => $"Listening to {mapArtistTitle}",
                 "Editing" => $"Editing {mapArtistTitle} + {diff}",
-                "Watching" => $"Spectating {username}", // Map info moved to State while spectating. To-do: Add check for "Watching" vs "Spectating" 
+                "Watching" => username == banchoUsername ? $"Spectating {username}" : "Watching a replay", // Map info moved to State while spectating. 
                 _ => mapArtistTitle + diff
             };
-            state = State switch // Struct allows changes based on combined detail and status (This will be relevant in future)
+            if (TokenParser("banchoStatus") == "Afk")
             {
-                { Detailed: true, Status: "Listening" } => RawStatusMapping(rawStatusMapping, TokenParser("rawStatus")),
-                { Detailed: false, Status: "Listening" } => RawStatusMapping(rawStatusMapping, TokenParser("rawStatus")),
-                { Detailed: true, Status: "Editing" } => $"Objects: {circles + sliders + spinners}",
-                { Detailed: false, Status: "Editing" } => $"Objects: {circles + sliders + spinners}",
-                { Detailed: true, Status: "Watching" } => $"{mapArtistTitle} {diff}", // Map info moved to State while spectating
-                { Detailed: false, Status: "Watching" } => $"{mapArtistTitle} {diff}",
-                { Detailed: false, Status: "Playing" } => mods,
-                _ => $"{mods} | {acc} | {c100}/{c50}/{miss} | {currentMaxCombo}"
-            };
+                details = "Afk";
+                state = " ";
+            }
+            else
+            {
+                state = State switch // Struct allows changes based on combined detail and status (This will be relevant in future)
+                {
+                    { Detailed: true, Status: "Listening" } => RawStatusMapping(rawStatusMapping, TokenParser("rawStatus")),
+                    { Detailed: false, Status: "Listening" } => RawStatusMapping(rawStatusMapping, TokenParser("rawStatus")),
+                    { Detailed: true, Status: "Editing" } => $"Objects: {circles + sliders + spinners}",
+                    { Detailed: false, Status: "Editing" } => $"Objects: {circles + sliders + spinners}",
+                    { Detailed: true, Status: "Watching" } => $"{mapArtistTitle} {diff}", // Map info moved to State while spectating
+                    { Detailed: false, Status: "Watching" } => $"{mapArtistTitle} {diff}",
+                    { Detailed: false, Status: "Playing" } => mods,
+                    { Detailed: false, Status: "ResultsScreen" } => mods,
+                    _ => $"{mods} | {acc} | {c100}/{c50}/{miss} | {currentMaxCombo}"
+                };
+            }
+
             largeImageText = status switch
             {
                 "Watching" => $"Spectating {username}",
@@ -173,7 +186,7 @@ namespace RPCCompanion
             {
                 "Listening" => "Idle",
                 "Editing" => mBpm + " BPM",
-                _ => (Math.Round(Convert.ToDouble(ppIfMapEndsNow)))+ "pp"
+                _ => (Math.Round(Convert.ToDouble(ppIfMapEndsNow))) + "pp"
             };
             if (TokenParser("rawStatus") != "NotRunning" || TokenParser("rawStatus") is not null)
                 smallImageKey = status switch
@@ -186,7 +199,14 @@ namespace RPCCompanion
                 smallImageText = "Not running";
                 smallImageKey = "idle";
             }
-            DiscordRPC.Button myProfile = new DiscordRPC.Button() { Label = "My Profile", Url = rpcProfileLink };
+            rpcProfileLink = server switch
+            {
+                "Akatsuki" => "https://akatsuki.pw/u/" + banchoId,
+                "Ripple" => "https://ripple.moe/u/" + banchoId,
+                _ => "https://osu.ppy.sh/users/" + banchoId
+            };
+
+            DiscordRPC.Button myProfile = new DiscordRPC.Button() { Label = banchoUsername, Url = rpcProfileLink };
             DiscordRPC.Button dlButton = new DiscordRPC.Button() { Label = "Map Link", Url = dl };
 
             if (detailed)
