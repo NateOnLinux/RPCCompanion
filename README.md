@@ -28,9 +28,10 @@
  4. Start StreamCompanion
  5. Open StreamCompanion Settings and then Discord Rich Presence
  ![image](https://user-images.githubusercontent.com/128091734/227116004-14cb8950-005d-4827-829e-a831e14d9a85.png)
- 6. Select whether you'd like Detailed or Minimal mode. If using Detailed mode, it's recommended to enter your profile link in the text box (Your profile will be detected automatically in future releases)
- 7. Disable "Discord Rich Presence" in osu! settings if it's enabled
- 8. Check "Enable RPC Companion"
+ 6. Select whether you'd like Detailed or Minimal mode. 
+ 7. Select your server (Leave this on "Bancho" if you don't know what this is)
+ 8. Disable "Discord Rich Presence" in osu! settings if it's enabled
+ 9. Check "Enable RPC Companion"
  
  Bugs? Ideas? Submit them [here](https://github.com/NateOnLinux/rpcCompanion/issues).
  
