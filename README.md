@@ -27,7 +27,7 @@
  3. Copy everything to `C:\Program Files (x86)\StreamCompanion\Plugins` (Copy the whole Dlls folder - do not remove the file inside)
  4. Start StreamCompanion
  5. Open StreamCompanion Settings and then Discord Rich Presence
- ![image](https://user-images.githubusercontent.com/128091734/227116004-14cb8950-005d-4827-829e-a831e14d9a85.png)
+ ![image](https://user-images.githubusercontent.com/128091734/228424868-d4390393-0b94-4da3-8016-899a2eb033f5.png)
  6. Select whether you'd like Detailed or Minimal mode. 
  7. Select your server (Leave this on "Bancho" if you don't know what this is)
  8. Disable "Discord Rich Presence" in osu! settings if it's enabled
